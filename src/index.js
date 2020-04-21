@@ -16,7 +16,7 @@ app.use(
 );
 
 app.get('/logger', (req, res) => {
-  fs.readFile('logger.json', 'utf8', function readFileCallback(err, data) {
+  fs.readFile('logs/logger.json', 'utf8', function readFileCallback(err, data) {
     if (err) {
       console.log(err);
     } else {
@@ -26,20 +26,25 @@ app.get('/logger', (req, res) => {
 });
 
 app.post('/logger', (req, res) => {
-  // console.log(req.body);
-  const { category, action, label } = req.body;
-  fs.readFile('logger.json', 'utf8', function readFileCallback(err, data) {
-    if (err) {
-      console.log(err);
-    } else {
-      const obj = JSON.parse(data); //now it an object
-      // console.log(label);
-      obj.table.push({ category, action, label, createdAt: new Date() }); //add some data
-      json = JSON.stringify(obj); //convert it back to json
-      fs.writeFile('logger.json', json, 'utf8', () => {}); // write it back
-      res.send('Ok');
-    }
-  });
+  const reqBody = req.body;
+  if (reqBody) {
+    fs.readFile('logs/logger.json', 'utf8', function readFileCallback(
+      err,
+      data
+    ) {
+      if (err) {
+        console.log(err);
+      } else {
+        const obj = JSON.parse(data); //now it an object
+        obj.table.push({ ...reqBody, createdAt: new Date() }); //add some data
+        json = JSON.stringify(obj); //convert it back to json
+        fs.writeFile('logs/logger.json', json, 'utf8', () => {}); // write it back
+        res.send('Ok');
+      }
+    });
+  } else {
+    res.send('Ok');
+  }
 });
 
 app.listen(port, () =>
